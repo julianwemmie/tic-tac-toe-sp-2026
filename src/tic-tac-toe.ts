@@ -63,3 +63,12 @@ export function getWinner(state: GameState): Player | null {
   });
   return winner
 }
+
+export function isTie(state: GameState): boolean {
+  const winner = getWinner(state)
+  if (winner) {
+    return false
+  }
+  const turns = state.board.filter(cell => cell !== null).length
+  return turns === 9
+}

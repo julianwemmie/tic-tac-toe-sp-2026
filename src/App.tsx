@@ -1,38 +1,35 @@
+import './App.css'
 import { useState } from "react";
-import { createGame, getWinner, isTie, makeMove, type Player} from "./tic-tac-toe";
+import { createGame, getGameWinner, makeMove, TIE, type Player} from "./ultimate-tic-tac-toe";
+import SubBoard from "./components/SubBoard"
 
 function App() {
   const [gameState, setGameState] = useState(getInitialGame())
-  const [winner, setWinner] = useState<null|Player|'tie'>(null)
+  const winner = getGameWinner(gameState)
 
-  const onClick = (index: number) => {
-    const nextState = makeMove(gameState, index)
+  const onClick = (mainIndex: number, subIndex: number) => {
+    const nextState = makeMove(gameState, mainIndex, subIndex)
     setGameState(nextState)
-
-    if (getWinner(nextState)) {
-      setWinner(getWinner(nextState))
-    }
-    if (isTie(nextState)) {
-      setWinner('tie')
-    }
   }
 
   const getGameInfoText = () => {
-    if (winner === 'tie'
+    if (winner === TIE
     ) {
       return 'GAME OVER! The game ended in a TIE!'
     }
     if (winner) {
       return 'GAME OVER! The winner was: ' + winner
     }
-    return 'Tic-Tac-Toe! Current player: ' + gameState.currentPlayer
+    return 'Ultimate Tic-Tac-Toe! Current player: ' 
+      + gameState.currentPlayer 
+      + ' | Available square: ' 
+      + (gameState.nextAvailableIndex ?? 'Any')
   }
 
-  // TODO: display the gameState, and call `makeMove` when a player clicks a button
   return (
     <>
       <div style={{
-        paddingTop: '15em',
+        paddingTop: '10vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -46,15 +43,14 @@ function App() {
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)'
         }}>
-          {gameState.board.map((cell, index) => (
-            <button style={{
-              height: '5rem',
-              width: '5rem',
-              fontSize: '20px'
-            }}
-            onClick={() => onClick(index)}
-            >{cell ?? '-'}</button>
+          {gameState.board.map((_, index) => (
+            <SubBoard 
+              gameState={gameState}
+              mainIndex={index}
+              onClick={onClick}
+            />
           ))}
+
         </div>
       </div>
     </>

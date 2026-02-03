@@ -1,0 +1,4 @@
+.tic-tac-toe--button:hover {
+    background-color: lightgrey;
+    cursor: pointer;
+}

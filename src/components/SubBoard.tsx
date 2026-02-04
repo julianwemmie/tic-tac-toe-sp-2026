@@ -4,7 +4,7 @@ import { getTTTBordersByIndex } from "../utils/styling"
 type SubBoardProps = {
   gameState: GameState,
   mainIndex: number,
-  onClick: (mainIndex: number, subIndex: number) => void,
+  makeMove: (mainBoardIndex: number, subIndex: number) => void
   highlighted: boolean
 }
 
@@ -12,12 +12,8 @@ const isWinnerTie = (winner: Player | null | typeof TIE) => {
   return winner !== null && winner !== Player.X && winner !== Player.O
 }
 
-export default function SubBoard({ gameState, mainIndex, onClick, highlighted }: SubBoardProps) {
+export default function SubBoard({ gameState, mainIndex, makeMove, highlighted }: SubBoardProps) {
   const winner = getSubGameWinner(gameState, mainIndex)
-
-  const handleClick = (mainIndex: number, subIndex: number) => {
-    onClick(mainIndex, subIndex)
-  }
 
   return (
     <>
@@ -49,6 +45,7 @@ export default function SubBoard({ gameState, mainIndex, onClick, highlighted }:
         )}
         {gameState.board[mainIndex].map((cell, index) => (
           <div
+            key={`${mainIndex}-${index}`}
             className="tic-tac-toe--button"
             style={{
               height: '2.5rem',
@@ -65,7 +62,7 @@ export default function SubBoard({ gameState, mainIndex, onClick, highlighted }:
                 highlighted ? 'rgb(125, 125, 125)' : 'rgb(200,200,200)'
               )
             }}
-            onClick={() => handleClick(mainIndex, index)}
+            onClick={() => makeMove(mainIndex, index)}
           >{cell}</div>
         ))}
       </div>

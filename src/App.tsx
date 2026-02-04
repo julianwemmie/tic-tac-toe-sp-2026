@@ -1,21 +1,43 @@
 import './App.css'
-import { useState } from "react";
-import { createGame, getGameWinner, TIE } from "./ultimate-tic-tac-toe";
+import { useEffect, useState } from "react";
+import { createGame, getGameWinner, TIE, type GameState } from "./ultimate-tic-tac-toe";
 import MainBoard from './components/MainBoard';
 
 function App() {
-  const [gameState, setGameState] = useState(getInitialGame())
-  const winner = getGameWinner(gameState)
+  const [gameState, setGameState] = useState<GameState>(createGame())
+  const [loading, setLoading] = useState(false)
+  const winner = gameState ? getGameWinner(gameState) : undefined
+
+  useEffect(() => {
+    setLoading(true)
+    fetch('http://localhost:3000/game')
+      .then(res => res.json())
+      .then(gameState => setGameState(gameState))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleClick = (mainBoardIndex: number, subIndex: number): void => {
+    fetch('http://localhost:3000/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mainIndex: mainBoardIndex, subIndex: subIndex })
+    })
+      .then(res => res.json())
+      .then(gameState => setGameState(gameState))
+  }
 
   const getGameInfoText = () => {
-    if (winner === TIE
-    ) {
+    if (winner === TIE) {
       return 'GAME OVER! The game ended in a TIE!'
     }
     if (winner) {
       return 'GAME OVER! The winner was: ' + winner
     }
-    return `Current player: ${gameState.currentPlayer}`
+    return `Current player: ${gameState?.currentPlayer}`
+  }
+
+  if (loading) {
+    return <p>loading...</p>
   }
 
   return (
@@ -31,21 +53,14 @@ function App() {
         <div style={{
           paddingBottom: '2rem'
         }}
-          >{getGameInfoText()}</div>
+        >{getGameInfoText()}</div>
         <MainBoard
           gameState={gameState}
-          setGameState={setGameState}
+          makeMove={handleClick}
         />
       </div>
     </>
   )
-}
-
-function getInitialGame() {
-  let initialGameState = createGame()
-  // initialGameState = makeMove(initialGameState, 3)
-  // initialGameState = makeMove(initialGameState, 0)
-  return initialGameState
 }
 
 export default App;

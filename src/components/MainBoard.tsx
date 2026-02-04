@@ -1,17 +1,13 @@
-import { makeMove, type GameState } from "../ultimate-tic-tac-toe"
+import { type GameState } from "../ultimate-tic-tac-toe"
 import { getTTTBordersByIndex } from "../utils/styling"
 import SubBoard from "./SubBoard"
 
 type MainBoardProps = {
   gameState: GameState,
-  setGameState: React.Dispatch<React.SetStateAction<GameState>>
+  makeMove: (mainBoardIndex: number, subIndex: number) => void
 }
 
-export default function MainBoard({gameState, setGameState}: MainBoardProps) {
-  const onClick = (mainIndex: number, subIndex: number) => {
-    const nextState = makeMove(gameState, mainIndex, subIndex)
-    setGameState(nextState)
-  }
+export default function MainBoard({gameState, makeMove}: MainBoardProps) {
 
   return (
     <div style={{
@@ -20,6 +16,7 @@ export default function MainBoard({gameState, setGameState}: MainBoardProps) {
     }}>
       {gameState.board.map((_, index) => (
         <div
+          key={index}
           style={{
             display: 'flex',
             justifyContent: 'center',
@@ -30,7 +27,7 @@ export default function MainBoard({gameState, setGameState}: MainBoardProps) {
           <SubBoard
             gameState={gameState}
             mainIndex={index}
-            onClick={onClick}
+            makeMove={makeMove}
             highlighted={gameState.requiredBoardIndex === null || gameState.requiredBoardIndex === index}
           />
         </div>

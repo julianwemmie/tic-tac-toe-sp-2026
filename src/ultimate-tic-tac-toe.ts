@@ -27,6 +27,9 @@ export function createGame(): GameState {
 
 export function makeMove(state: GameState, mainIndex: number, subIndex: number): GameState {
   // TODO: double check invalid moves. 
+  if (getGameWinner(state)) {
+    return state
+  }
   if (state.nextAvailableIndex !== null && state.nextAvailableIndex !== mainIndex) {
     return state
   }
@@ -49,52 +52,39 @@ export function makeMove(state: GameState, mainIndex: number, subIndex: number):
   return newState
 }
 
-export function getSubGameWinner(state: GameState, mainIndex: number): Player | null | typeof TIE {
-  const subBoard = state.board[mainIndex]
-  const groups = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-    [0, 4, 8], [2, 4, 6]             // diagonals
-  ]
-  let winner = null
-  groups.forEach(group => {
-    const tmpRow = subBoard.filter((_, index) => group.includes(index))
-    if (tmpRow.every(cell => cell === Player.X)) {
-      winner = Player.X
-    }
-    if (tmpRow.every(cell => cell === Player.O)) {
-      winner = Player.O
-    }
-  });
-  if (!winner && subBoard.filter(cell => cell !== null).length === 9) {
-    winner = TIE
-  }
-  return winner
-}
+type AbstractBoard<T> = [T, T, T, T, T, T, T, T, T]
 
-export function getGameWinner(state: GameState): Player | null | typeof TIE {
-  const groups = [
+function getWinner<T>(board: AbstractBoard<T>, getCellValue: (cell: T, index: number) => Player|null|typeof TIE) {
+  const winningIndices = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
     [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
     [0, 4, 8], [2, 4, 6]             // diagonals
   ]
   let winner = null
-  groups.forEach(group => {
-    const subGameWinners = group.map(subGameIndex => getSubGameWinner(state, subGameIndex))
-    if (subGameWinners.every(subGameWinner => subGameWinner === Player.X)) {
+  winningIndices.forEach(group => {
+    const cellValues = group.map(index => getCellValue(board[index], index))
+    if (cellValues.every(cellValue => cellValue === Player.X)) {
       winner = Player.X
     }
-    if (subGameWinners.every(subGameWinner => subGameWinner === Player.O)) {
+    if (cellValues.every(cellValue => cellValue === Player.O)) {
       winner = Player.O
     }
   });
   if (!winner) {
-    const subGameWinners = state.board.map((_, index) => getSubGameWinner(state, index))
-    if (subGameWinners.every(subGameWinner => subGameWinner !== null)) {
+    const cellValues = board.map((_, index) => getCellValue(board[index], index))
+    if (cellValues.every(cellValue => cellValue !== null)) {
       winner = TIE
     }
   }
   return winner
+}
+
+export function getSubGameWinner(state: GameState, mainIndex: number): Player | null | typeof TIE {
+  return getWinner(state.board[mainIndex], (cell) => cell)
+}
+
+export function getGameWinner(state: GameState): Player | null | typeof TIE {
+  return getWinner(state.board, (_, index) => getSubGameWinner(state, index))
 }
 
 

@@ -21,16 +21,17 @@ export default function MainBoard({gameState, setGameState}: MainBoardProps) {
       {gameState.board.map((_, index) => (
         <div
           style={{
-            borderColor: '#5f5e5e',
-            borderWidth: '3px',
-            ...getTTTBordersByIndex(index, '2px')
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'center',
+            ...getTTTBordersByIndex(index, '3px', 'rgb(79, 79, 79)')
           }}
         >
           <SubBoard
             gameState={gameState}
             mainIndex={index}
             onClick={onClick}
-            highlighted={gameState.requiredBoardIndex === index}
+            highlighted={gameState.requiredBoardIndex === null || gameState.requiredBoardIndex === index}
           />
         </div>
       ))}

@@ -1,39 +1,5 @@
 
 
-// export const getTTTBordersByIndex = (index: number) => {
-//   let borders = {
-//     borderTop: 'solid',
-//     borderBottom: 'solid',
-//     borderLeft: 'solid',
-//     borderRight: 'solid'
-//   }
-//   if ([0, 1, 2].includes(index)) {
-//     borders = {
-//       ...borders,
-//       borderTop: 'none',
-//     }
-//   }
-//   if ([0, 3, 6].includes(index)) {
-//     borders = {
-//       ...borders,
-//       borderLeft: 'none'
-//     }
-//   }
-//   if ([2, 5, 8].includes(index)) {
-//     borders = {
-//       ...borders,
-//       borderRight: 'none'
-//     }
-//   }
-//   if ([6, 7, 8].includes(index)) {
-//     borders = {
-//       ...borders,
-//       borderBottom: 'none'
-//     }
-//   }
-//   return borders
-// }
-
 export const getTTTBordersByIndex = (index: number, width: string = '1px', color: string = 'black') => {
   const borders = []
   // borders.push('inset 1px 0 0 0 black') // left

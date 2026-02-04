@@ -1,4 +1,4 @@
-import { type GameState, getSubGameWinner } from "../ultimate-tic-tac-toe"
+import { type GameState, getSubGameWinner, Player, TIE } from "../ultimate-tic-tac-toe"
 import { getTTTBordersByIndex } from "../utils/styling"
 
 type SubBoardProps = {
@@ -8,21 +8,15 @@ type SubBoardProps = {
   highlighted: boolean
 }
 
+const isWinnerTie = (winner: Player | null | typeof TIE) => {
+  return winner !== null && winner !== Player.X && winner !== Player.O
+}
+
 export default function SubBoard({ gameState, mainIndex, onClick, highlighted }: SubBoardProps) {
   const winner = getSubGameWinner(gameState, mainIndex)
 
   const handleClick = (mainIndex: number, subIndex: number) => {
     onClick(mainIndex, subIndex)
-  }
-
-  if (winner) {
-    return (
-      <p style={{
-        fontSize: '75px',
-        margin: '0',
-        textAlign: 'center'
-      }}>{winner}</p>
-    )
   }
 
   return (
@@ -35,6 +29,24 @@ export default function SubBoard({ gameState, mainIndex, onClick, highlighted }:
         marginRight: '3px',
         marginBottom: '3px'
       }}>
+        {winner && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}>
+            <p style={{
+              fontSize: isWinnerTie(winner) ? '4rem' : '7rem',
+              margin: '0',
+              textAlign: 'center'
+            }}>{winner}</p>
+          </div>
+        )}
         {gameState.board[mainIndex].map((cell, index) => (
           <div
             className="tic-tac-toe--button"
@@ -50,7 +62,7 @@ export default function SubBoard({ gameState, mainIndex, onClick, highlighted }:
               ...getTTTBordersByIndex(
                 index,
                 highlighted ? '2px' : '1px',
-                highlighted ? 'rgb(0,0,0)' : 'rgb(200,200,200)'
+                highlighted ? 'rgb(125, 125, 125)' : 'rgb(200,200,200)'
               )
             }}
             onClick={() => handleClick(mainIndex, index)}

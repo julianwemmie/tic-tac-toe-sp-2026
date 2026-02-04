@@ -21,6 +21,9 @@ export default function MainBoard({gameState, setGameState}: MainBoardProps) {
       {gameState.board.map((_, index) => (
         <div
           style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'center',
             ...getTTTBordersByIndex(index, '3px', 'rgb(79, 79, 79)')
           }}
         >

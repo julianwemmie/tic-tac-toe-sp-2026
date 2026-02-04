@@ -27,30 +27,14 @@ export default function SubBoard({ gameState, mainIndex, onClick, highlighted }:
 
   return (
     <>
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignContent: 'center'
-    }}>
-
-    </div>
       <div style={{
         position: 'relative',
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         padding: '5px',
+        marginRight: '3px',
+        marginBottom: '3px'
       }}>
-        {highlighted && (
-          <div style={{
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            position: 'absolute',
-            background: "rgba(66,66,66,0.2)",
-            pointerEvents: 'none'
-          }}></div>
-        )}
         {gameState.board[mainIndex].map((cell, index) => (
           <div
             className="tic-tac-toe--button"
@@ -62,9 +46,12 @@ export default function SubBoard({ gameState, mainIndex, onClick, highlighted }:
               justifyContent: 'center',
               alignItems: 'center',
               fontSize: '25px',
-              borderColor: '#666666',
-              borderWidth: '1px',
-              ...getTTTBordersByIndex(index)
+              color: highlighted ? 'black' : 'rgb(139, 139, 139)',
+              ...getTTTBordersByIndex(
+                index,
+                highlighted ? '2px' : '1px',
+                highlighted ? 'rgb(0,0,0)' : 'rgb(200,200,200)'
+              )
             }}
             onClick={() => handleClick(mainIndex, index)}
           >{cell}</div>

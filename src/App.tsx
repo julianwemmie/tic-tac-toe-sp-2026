@@ -1,7 +1,6 @@
 import './App.css'
 import { useState } from "react";
-import { createGame, getGameWinner, makeMove, TIE } from "./ultimate-tic-tac-toe";
-import SubBoard from "./components/SubBoard"
+import { createGame, getGameWinner, TIE } from "./ultimate-tic-tac-toe";
 import MainBoard from './components/MainBoard';
 
 function App() {

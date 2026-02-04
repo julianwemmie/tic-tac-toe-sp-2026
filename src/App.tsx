@@ -2,15 +2,11 @@ import './App.css'
 import { useState } from "react";
 import { createGame, getGameWinner, makeMove, TIE } from "./ultimate-tic-tac-toe";
 import SubBoard from "./components/SubBoard"
+import MainBoard from './components/MainBoard';
 
 function App() {
   const [gameState, setGameState] = useState(getInitialGame())
   const winner = getGameWinner(gameState)
-
-  const onClick = (mainIndex: number, subIndex: number) => {
-    const nextState = makeMove(gameState, mainIndex, subIndex)
-    setGameState(nextState)
-  }
 
   const getGameInfoText = () => {
     if (winner === TIE
@@ -23,7 +19,7 @@ function App() {
     return 'Ultimate Tic-Tac-Toe! Current player: ' 
       + gameState.currentPlayer 
       + ' | Available square: ' 
-      + (gameState.nextAvailableIndex ?? 'Any')
+      + (gameState.requiredBoardIndex ?? 'Any')
   }
 
   return (
@@ -39,18 +35,10 @@ function App() {
           padding: '2rem',
         }}
           >{getGameInfoText()}</div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)'
-        }}>
-          {gameState.board.map((_, index) => (
-            <SubBoard 
-              gameState={gameState}
-              mainIndex={index}
-              onClick={onClick}
-            />
-          ))}
-        </div>
+        <MainBoard
+          gameState={gameState}
+          setGameState={setGameState}
+        />
       </div>
     </>
   )

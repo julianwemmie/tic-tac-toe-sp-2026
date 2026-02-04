@@ -1,50 +1,18 @@
 import { type GameState, getSubGameWinner } from "../ultimate-tic-tac-toe"
+import { getTTTBordersByIndex } from "../utils/styling"
 
 type SubBoardProps = {
   gameState: GameState,
   mainIndex: number,
-  onClick: (mainIndex: number, subIndex: number) => void
+  onClick: (mainIndex: number, subIndex: number) => void,
+  highlighted: boolean
 }
 
-export default function SubBoard({ gameState, mainIndex, onClick }: SubBoardProps) {
+export default function SubBoard({ gameState, mainIndex, onClick, highlighted }: SubBoardProps) {
   const winner = getSubGameWinner(gameState, mainIndex)
 
   const handleClick = (mainIndex: number, subIndex: number) => {
     onClick(mainIndex, subIndex)
-  }
-
-  const getBordersByIndex = (index: number) => {
-    let borders = {
-      borderTop: 'solid',
-      borderBottom: 'solid',
-      borderLeft: 'solid',
-      borderRight: 'solid'
-    }
-    if ([0, 1, 2].includes(index)) {
-      borders = {
-        ...borders,
-        borderTop: 'none',
-      }
-    }
-    if ([0, 3, 6].includes(index)) {
-      borders = {
-        ...borders,
-        borderLeft: 'none'
-      }
-    }
-    if ([2, 5, 8].includes(index)) {
-      borders = {
-        ...borders,
-        borderRight: 'none'
-      }
-    }
-    if ([6, 7, 8].includes(index)) {
-      borders = {
-        ...borders,
-        borderBottom: 'none'
-      }
-    }
-    return borders
   }
 
   if (winner) {
@@ -59,23 +27,47 @@ export default function SubBoard({ gameState, mainIndex, onClick }: SubBoardProp
 
   return (
     <>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignContent: 'center'
+    }}>
+
+    </div>
       <div style={{
+        position: 'relative',
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
-        padding: '2px'
+        padding: '5px',
       }}>
+        {highlighted && (
+          <div style={{
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            position: 'absolute',
+            background: "rgba(66,66,66,0.2)",
+            pointerEvents: 'none'
+          }}></div>
+        )}
         {gameState.board[mainIndex].map((cell, index) => (
-          <button
+          <div
             className="tic-tac-toe--button"
             style={{
               height: '2.5rem',
               width: '2.5rem',
+              textAlign: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
               fontSize: '25px',
-              borderColor: 'grey',
-              ...getBordersByIndex(index)
+              borderColor: '#666666',
+              borderWidth: '1px',
+              ...getTTTBordersByIndex(index)
             }}
             onClick={() => handleClick(mainIndex, index)}
-          >{cell ?? '-'}</button>
+          >{cell}</div>
         ))}
       </div>
     </>

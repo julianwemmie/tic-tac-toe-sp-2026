@@ -14,39 +14,39 @@ export type Board = [SubBoard, SubBoard, SubBoard, SubBoard, SubBoard, SubBoard,
 export type GameState = {
   board: Board,
   currentPlayer: Player,
-  nextAvailableIndex: number | null
+  requiredBoardIndex: number | null
 }
 
 export function createGame(): GameState {
   return {
     board: Array(9).fill(null).map(() => Array(9).fill(null)) as Board,
     currentPlayer: Player.X,
-    nextAvailableIndex: null
+    requiredBoardIndex: null
   };
 }
 
-export function makeMove(state: GameState, mainIndex: number, subIndex: number): GameState {
-  // TODO: double check invalid moves. 
+export function makeMove(state: GameState, mainBoardIndex: number, subIndex: number): GameState {
   if (getGameWinner(state)) {
     return state
   }
-  if (state.nextAvailableIndex !== null && state.nextAvailableIndex !== mainIndex) {
+  // if there's a required sqaure
+  if (state.requiredBoardIndex !== null && state.requiredBoardIndex !== mainBoardIndex) {
     return state
   }
-  if (state.board[mainIndex][subIndex] !== null) {
+  if (state.board[mainBoardIndex][subIndex] !== null) {
     return state
   }
 
   const newBoard = structuredClone(state.board)
-  newBoard[mainIndex][subIndex] = state.currentPlayer
+  newBoard[mainBoardIndex][subIndex] = state.currentPlayer
   const newState: GameState = {
     board: [...newBoard] as Board,
     currentPlayer: state.currentPlayer === Player.X ? Player.O : Player.X,
-    nextAvailableIndex: subIndex
+    requiredBoardIndex: subIndex
   }
 
   if (getSubGameWinner(newState, subIndex)) {
-    newState.nextAvailableIndex = null
+    newState.requiredBoardIndex = null
   }
 
   return newState

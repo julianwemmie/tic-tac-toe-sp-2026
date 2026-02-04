@@ -1,3 +1,16 @@
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+html {
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+
 .tic-tac-toe--button:hover {
     background-color: lightgrey;
     cursor: pointer;

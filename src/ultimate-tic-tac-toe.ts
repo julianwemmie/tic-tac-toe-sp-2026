@@ -12,6 +12,7 @@ export type SubBoard = [Cell, Cell, Cell, Cell, Cell, Cell, Cell, Cell, Cell];
 export type Board = [SubBoard, SubBoard, SubBoard, SubBoard, SubBoard, SubBoard, SubBoard, SubBoard, SubBoard]
 
 export type GameState = {
+  id: string,
   board: Board,
   currentPlayer: Player,
   requiredBoardIndex: number | null
@@ -19,6 +20,7 @@ export type GameState = {
 
 export function createGame(): GameState {
   return {
+    id: crypto.randomUUID(),
     board: Array(9).fill(null).map(() => Array(9).fill(null)) as Board,
     currentPlayer: Player.X,
     requiredBoardIndex: null
@@ -40,6 +42,7 @@ export function makeMove(state: GameState, mainBoardIndex: number, subIndex: num
   const newBoard = structuredClone(state.board)
   newBoard[mainBoardIndex][subIndex] = state.currentPlayer
   const newState: GameState = {
+    id: state.id,
     board: [...newBoard] as Board,
     currentPlayer: state.currentPlayer === Player.X ? Player.O : Player.X,
     requiredBoardIndex: subIndex

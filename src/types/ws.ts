@@ -5,7 +5,8 @@ import type { GameState } from "./ultimateTicTacToe"
 export enum RequestType {
     MOVE = 'move',
     JOIN = 'join',
-    LEAVE = 'leave'
+    LEAVE = 'leave',
+    CREATE = 'create'
 }
 
 
@@ -13,6 +14,9 @@ interface SocketRequestBase {
     type: RequestType
 }
 
+export interface CreateRequest extends SocketRequestBase {
+    type: RequestType.CREATE,
+}
 
 export interface MoveRequest extends SocketRequestBase {
     type: RequestType.MOVE,
@@ -31,12 +35,14 @@ export interface LeaveRequest extends SocketRequestBase {
     gameId: string
 }
 
-export type SocketRequest = MoveRequest | JoinRequest | LeaveRequest
+export type SocketRequest = CreateRequest | MoveRequest | JoinRequest | LeaveRequest
 
 // ------------- RESPONSE ----------------
 
 export enum ResponseType {
+    CREATE = 'create',
     GAME_UPDATE = 'game_update',
+    GAME_LIST_UPDATE = 'game_list_update',
     ERROR = 'error'
 }
 
@@ -44,9 +50,21 @@ interface SocketResponseBase {
     type: ResponseType
 }
 
-interface GameUpdateResponse extends SocketResponseBase {
-    type: ResponseType.GAME_UPDATE
+export interface CreateResponse extends SocketResponseBase {
+    type: ResponseType.CREATE,
     gameState: GameState
+}
+
+interface GameUpdateResponse extends SocketResponseBase {
+    type: ResponseType.GAME_UPDATE,
+    gameState: GameState
+}
+
+export interface GameListUpdateResponse extends SocketResponseBase {
+    type: ResponseType.GAME_LIST_UPDATE,
+    games: {
+        [k: string]: GameState;
+    }
 }
 
 export interface ErrorResponse extends SocketResponseBase {
@@ -54,4 +72,4 @@ export interface ErrorResponse extends SocketResponseBase {
     message: string
 }
 
-export type SocketResponse = GameUpdateResponse | ErrorResponse
+export type SocketResponse = CreateResponse | GameUpdateResponse | GameListUpdateResponse | ErrorResponse 

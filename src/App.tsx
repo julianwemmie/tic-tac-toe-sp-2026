@@ -47,7 +47,7 @@ function App() {
             wsMessage={wsMessage}
             wsRef={wsRef}
           /> :
-          <SelectGame setSelectedGameId={setSelectedGameId} />}
+          <SelectGame setSelectedGameId={setSelectedGameId} wsMessage={wsMessage} wsRef={wsRef}/>}
       </div>
     </>
   )

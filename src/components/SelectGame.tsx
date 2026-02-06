@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { GameState } from "../ultimate-tic-tac-toe"
+import type { GameState } from "../types/ultimateTicTacToe"
 import GameThumbnail from "./GameThumbnail"
 import { timestampToLocalDateTime } from "../utils/date"
 

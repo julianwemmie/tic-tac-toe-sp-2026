@@ -1,5 +1,6 @@
 import { describe, test, expect, vi } from "vitest";
-import { createGame, makeMove, Player, type GameState } from "./ultimate-tic-tac-toe";
+import { createGame, makeMove } from "./ultimate-tic-tac-toe";
+import { Player, type GameState } from "./types/ultimateTicTacToe";
 import { randomInt } from "crypto";
 import exampleGames from './example-games.json'
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { createGame, getGameWinner, TIE, type GameState } from "../ultimate-tic-tac-toe";
+import { createGame, getGameWinner } from "../ultimate-tic-tac-toe";
+import { TIE, type GameState } from "../types/ultimateTicTacToe";
 import MainBoard from './MainBoard';
 
 type UltimateTicTacToeProps = {

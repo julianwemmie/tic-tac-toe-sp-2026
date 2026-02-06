@@ -5,7 +5,9 @@ import cors from 'cors';
 import WebSocket from 'ws';
 
 
-import { createGame, makeMove, type GameState } from './ultimate-tic-tac-toe.ts'
+import { createGame, makeMove } from './ultimate-tic-tac-toe.ts'
+import { type GameState } from "./types/ultimateTicTacToe.ts";
+import { RequestType, ResponseType, type ErrorResponse, type SocketRequest } from "./types/ws.ts";
 
 const PORT = 3000
 
@@ -19,7 +21,7 @@ export function createServer() {
 
     const games = new Map<string, GameState>() // gameId : GameState
     const connections = new Map<string, WebSocket>() // clientId : WebSocket
-    // const subscriptions = new Map<string, string[]>() // gameId : clientId[]
+    const subscriptions = new Map<string, string[]>() // gameId : clientId[]
 
     app.get("/health", (_, res) => {
         res.send('ok')
@@ -71,24 +73,64 @@ export function createServer() {
 
         ws.onmessage = (event) => {
             const eventString = event.data.toString()
-            const eventObject = JSON.parse(eventString)
+            const request = JSON.parse(eventString) as SocketRequest
 
-            // if (eventObject.type === 'move') {
-            //     const {gameId, mainIndex, subIndex} = eventObject
-            //     if ([gameId, mainIndex, subIndex].some(val => val === undefined)) {
-            //         // send error
-            //     }
+            if (request.type === RequestType.JOIN) {
+                const gameId = request.gameId
+                let subscribers = subscriptions.get(gameId)
+                if (!subscribers) {
+                    subscribers = []
+                    subscriptions.set(gameId, subscribers)
+                }
+                subscribers.push(clientId)
+            }
+            else if (request.type === RequestType.MOVE) {
+                const gameId = request.gameId
+                const mainIndex = request.mainIndex
+                const subIndex = request.subIndex
 
-            //     ws.send(JSON.stringify(eventObject))
-            // }
-            if (eventObject.type === 'test') {
-                console.log('test')
-                ws.send(JSON.stringify({type:'test', data:'data'}))
+                if (gameId === undefined || mainIndex === undefined || subIndex === undefined) {
+                    const error: ErrorResponse = {
+                        type: ResponseType.ERROR,
+                        message: 'Request must contain gameId, mainIndex, and subIndex'
+                    }
+                    ws.send(JSON.stringify(error))
+                    return
+                }
+
+                const game = games.get(gameId)
+
+                if (!game) {
+                    const error: ErrorResponse = {
+                        type: ResponseType.ERROR,
+                        message: `Game with ID ${gameId} doesn't exist!`
+                    }
+                    ws.send(JSON.stringify(error))
+                    return
+                }
+
+                const gameState = makeMove(game, mainIndex, subIndex)
+                games.set(gameId, gameState)
+
+                const subscribers = subscriptions.get(gameId)
+                subscribers?.forEach(subscriber => {
+                    const subscriberWebsocket = connections.get(subscriber)
+                    subscriberWebsocket?.send(JSON.stringify({
+                        type: ResponseType.GAME_UPDATE,
+                        gameState: gameState
+                    }))
+                });
             }
         }
 
         ws.onclose = () => {
             connections.delete(clientId)
+            subscriptions.forEach((subscribers) => {
+                const index = subscribers.findIndex(subscriber => subscriber === clientId);
+                if (index !== -1) {
+                    subscribers.splice(index, 1);
+                }
+            })
         }
     })
 

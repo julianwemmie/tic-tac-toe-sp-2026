@@ -1,4 +1,5 @@
-import { type GameState, getSubGameWinner, isWinnerTie, Player, TIE } from "../ultimate-tic-tac-toe"
+import { getSubGameWinner, isWinnerTie } from "../ultimate-tic-tac-toe"
+import { type GameState, Player, TIE } from "../types/ultimateTicTacToe"
 import { getTTTBordersByIndex } from "../utils/styling"
 
 type SubBoardProps = {

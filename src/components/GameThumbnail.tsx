@@ -1,4 +1,5 @@
-import { getSubGameWinner, isWinnerTie, type GameState } from "../ultimate-tic-tac-toe"
+import { getSubGameWinner, isWinnerTie } from "../ultimate-tic-tac-toe"
+import { type GameState } from "../types/ultimateTicTacToe"
 import { getTTTBordersByIndex } from "../utils/styling"
 
 type GameThumbnailProps = {

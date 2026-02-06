@@ -1,4 +1,4 @@
-import { type GameState } from "../ultimate-tic-tac-toe"
+import { type GameState } from "../types/ultimateTicTacToe"
 import { getTTTBordersByIndex } from "../utils/styling"
 import SubBoard from "./SubBoard"
 

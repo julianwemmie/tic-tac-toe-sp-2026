@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import type { GameState } from "../ultimate-tic-tac-toe"
 import GameThumbnail from "./GameThumbnail"
 import { timestampToLocalDateTime } from "../utils/date"
+import type { GameState } from "../types/ultimateTicTacToe"
 
 
 type SelectGameProps = {
@@ -17,7 +17,7 @@ export default function SelectGame({ setSelectedGameId }: SelectGameProps) {
       .then(res => res.json())
       .then(games => {
         const gamesList = Object.values<GameState>(games)
-        setGames(gamesList.sort((a,b) => (b.createdTimestamp-a.createdTimestamp)))
+        setGames(gamesList.sort((a, b) => (b.createdTimestamp - a.createdTimestamp)))
       })
   }, [])
 
@@ -33,33 +33,32 @@ export default function SelectGame({ setSelectedGameId }: SelectGameProps) {
       <p>Select Game</p>
       <div className="select-game--grid">
         {games?.map((game) => (
-          <>
-            <div
-              onClick={() => setSelectedGameId(game.id)}
-              className="select-game--button"
-              style={{
-                padding: '0.5rem',
-                position: 'relative'
-              }}
-            >
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                zIndex: '4'
-              }}></div>
-              <div style={{
-                fontSize: '0.75rem',
-                textAlign: 'center'
-              }}>
-                {timestampToLocalDateTime(game.createdTimestamp)}
-              </div>
-              <GameThumbnail gameState={game} />
+          <div
+            key={game.id}
+            onClick={() => setSelectedGameId(game.id)}
+            className="select-game--button"
+            style={{
+              padding: '0.5rem',
+              position: 'relative'
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              zIndex: '4'
+            }}></div>
+            <div style={{
+              fontSize: '0.75rem',
+              textAlign: 'center'
+            }}>
+              {timestampToLocalDateTime(game.createdTimestamp)}
             </div>
-          </>
+            <GameThumbnail gameState={game} />
+          </div>
         ))}
       </div>
     </>

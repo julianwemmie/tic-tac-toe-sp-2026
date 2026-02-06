@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
-import { createGame, getGameWinner, TIE, type GameState } from "../ultimate-tic-tac-toe";
+import { createGame, getGameWinner } from "../ultimate-tic-tac-toe";
+import { TIE, type GameState } from "../types/ultimateTicTacToe";
 import MainBoard from './MainBoard';
+import { RequestType, ResponseType, type JoinRequest, type LeaveRequest, type MoveRequest, type SocketResponse } from "../types/ws";
 
 type UltimateTicTacToeProps = {
   selectedGameId: string,
-  setSelectedGameId: React.Dispatch<React.SetStateAction<string | null>>
+  setSelectedGameId: React.Dispatch<React.SetStateAction<string | null>>,
+  wsMessage: SocketResponse | undefined,
+  wsRef: React.RefObject<WebSocket | null>
 }
 
-export default function UltimateTicTacToe({selectedGameId, setSelectedGameId}: UltimateTicTacToeProps) {
+export default function UltimateTicTacToe({ selectedGameId, setSelectedGameId, wsMessage, wsRef }: UltimateTicTacToeProps) {
 
   const [gameState, setGameState] = useState<GameState>(createGame())
   const [loading, setLoading] = useState(false)
   const winner = gameState ? getGameWinner(gameState) : undefined
+
+  useEffect(() => {
+    if (wsMessage?.type === ResponseType.GAME_UPDATE) {
+      setGameState(wsMessage.gameState)
+    }
+  }, [wsMessage])
 
   useEffect(() => {
     setLoading(true)
@@ -19,16 +29,38 @@ export default function UltimateTicTacToe({selectedGameId, setSelectedGameId}: U
       .then(res => res.json())
       .then(gameState => setGameState(gameState))
       .finally(() => setLoading(false))
+
+    const joinRequest: JoinRequest = {
+      type: RequestType.JOIN,
+      gameId: selectedGameId
+    }
+    wsRef.current?.send(JSON.stringify(joinRequest))
+    return () => {
+      const leaveRequest: LeaveRequest = {
+        type: RequestType.LEAVE,
+        gameId: selectedGameId
+      }
+      wsRef.current?.send(JSON.stringify(leaveRequest))
+    }
   }, [])
 
   const handleClick = (mainBoardIndex: number, subIndex: number): void => {
-    fetch(`http://localhost:3000/move/${selectedGameId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mainIndex: mainBoardIndex, subIndex: subIndex })
-    })
-      .then(res => res.json())
-      .then(gameState => setGameState(gameState))
+    // fetch(`http://localhost:3000/move/${selectedGameId}`, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ mainIndex: mainBoardIndex, subIndex: subIndex })
+    // })
+    //   .then(res => res.json())
+    //   .then(gameState => setGameState(gameState))
+
+    const moveRequest: MoveRequest = {
+      type: RequestType.MOVE,
+      gameId: selectedGameId,
+      mainIndex: mainBoardIndex,
+      subIndex: subIndex
+    }
+
+    wsRef.current?.send(JSON.stringify(moveRequest))
   }
 
   const returnToLobby = () => {

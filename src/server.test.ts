@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { createServer } from './server';
-import { Player } from './ultimate-tic-tac-toe';
+import { Player } from "./types/ultimateTicTacToe";
 
 let app = createServer()
 

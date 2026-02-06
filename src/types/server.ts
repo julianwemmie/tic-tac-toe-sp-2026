@@ -1,9 +1,8 @@
 import type { GameState } from "./ultimateTicTacToe"
-import WebSocket from 'ws';
 
 export type User = {
     name: string,
-    connection: WebSocket,
+    connectionId: string,
 }
 
 export type Room = {

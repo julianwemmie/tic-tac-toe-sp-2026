@@ -2,6 +2,7 @@ import express, { json } from "express";
 import expressWs from 'express-ws'
 import ViteExpress from "vite-express";
 import cors from 'cors';
+import WebSocket from 'ws'
 
 
 import { createGame, makeMove } from './ultimate-tic-tac-toe.ts'
@@ -20,12 +21,6 @@ const createRoomId = (length: number) => {
     return result
 }
 
-const sendResponseToAll = (users: User[], message: SocketResponse) => {
-    users.forEach(user => {
-        user.connection.send(JSON.stringify(message))
-    })
-}
-
 export function createServer() {
     const { app } = expressWs(express())
     app.use(json())
@@ -35,6 +30,16 @@ export function createServer() {
     }))
 
     const rooms = new Map<string, Room>() // roomId : Room
+    const connections = new Map<string, WebSocket>() // connectionId : WebSocket
+
+    const sendResponseToAll = (users: User[], message: SocketResponse) => {
+        users.forEach(user => {
+            const connection = connections.get(user.connectionId)
+            if (connection) {
+                connection.send(JSON.stringify(message))
+            }
+        })
+    }
 
     app.get('/debug', (_, res) => {
         console.log('------------DEBUG----------------------------------------------------')
@@ -43,9 +48,11 @@ export function createServer() {
     })
 
     app.ws('/ws', (ws, _) => {
+        const connectionId = crypto.randomUUID()
+        connections.set(connectionId, ws)
         const user: User = {
             name: '',
-            connection: ws,
+            connectionId: connectionId
         }
 
         const sendResponse = (response: SocketResponse) => {
@@ -59,6 +66,9 @@ export function createServer() {
             if (request.type === RequestType.JOIN_ROOM) {
                 const roomId = request.roomId
                 const room = rooms.get(roomId)
+                if (room && !room.users.includes(user)) {
+                    room.users.push(user)
+                }
                 const joinRoomResponse: JoinRoomResponse = {
                     type: ResponseType.JOIN_ROOM,
                     room: room ?? null
@@ -221,6 +231,8 @@ export function createServer() {
                 }
                 sendResponseToAll(room.users, roomUpdateResponse)
             })
+            
+            connections.delete(connectionId)
         }
     })
 

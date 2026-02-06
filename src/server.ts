@@ -2,14 +2,29 @@ import express, { json } from "express";
 import expressWs from 'express-ws'
 import ViteExpress from "vite-express";
 import cors from 'cors';
-import WebSocket from 'ws';
 
 
 import { createGame, makeMove } from './ultimate-tic-tac-toe.ts'
-import { type GameState } from "./types/ultimateTicTacToe.ts";
-import { RequestType, ResponseType, type CreateResponse, type ErrorResponse, type GameListUpdateResponse, type SocketRequest } from "./types/ws.ts";
+import { Player } from "./types/ultimateTicTacToe.ts";
+import { RequestType, ResponseType, type CreateRoomResponse, type JoinRoomResponse, type RoomUpdateResponse, type SetNameResponse, type SocketRequest, type SocketResponse } from "./types/ws.ts";
+import type { Room, User } from "./types/server.ts";
 
 const PORT = 3000
+
+const createRoomId = (length: number) => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    let result = ""
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
+    return result
+}
+
+const sendResponseToAll = (users: User[], message: SocketResponse) => {
+    users.forEach(user => {
+        user.connection.send(JSON.stringify(message))
+    })
+}
 
 export function createServer() {
     const { app } = expressWs(express())
@@ -19,158 +34,192 @@ export function createServer() {
         methods: '*',
     }))
 
-    const games = new Map<string, GameState>() // gameId : GameState
-    const connections = new Map<string, WebSocket>() // clientId : WebSocket
-    const subscriptions = new Map<string, string[]>() // gameId : clientId[]
+    const rooms = new Map<string, Room>() // roomId : Room
 
     app.get('/debug', (_, res) => {
         console.log('------------DEBUG----------------------------------------------------')
-        console.log('games: ', games.size)
-        console.log('connections: ', connections.keys())
-        console.log('subscriptions: ', subscriptions)
+        console.log(rooms)
         res.send('ok')
-    })
-
-    app.get("/health", (_, res) => {
-        res.send('ok')
-    })
-
-    app.get("/games", (_, res) => {
-        const gamesObject = Object.fromEntries(games)
-        res.json(gamesObject)
-    })
-
-    app.get("/create", (_, res) => {
-        const newGame = createGame()
-        games.set(newGame.id, newGame)
-        res.json(newGame)
-    })
-
-    app.get("/game/:id", (req, res) => {
-        const gameId = req.params.id as string
-        if (!games.has(gameId)) {
-            res.status(404)
-            res.send(`Game with ID ${gameId} doesn't exist!`)
-            return
-        }
-        res.json(games.get(gameId))
-    })
-
-    app.post("/move/:id", (req, res) => {
-        const gameId = req.params.id as string
-        if (req.body?.mainIndex === undefined || req.body?.subIndex === undefined) {
-            res.status(400)
-            res.send('Missing mainIndex or subIndex!')
-            return
-        }
-        const { mainIndex, subIndex } = req.body
-        if (!games.has(gameId)) {
-            res.status(404)
-            res.send(`Game with ID ${gameId} doesn't exist!`)
-            return
-        }
-        const game = games.get(gameId) as GameState
-        const gameState = makeMove(game, mainIndex, subIndex)
-        games.set(gameId, gameState)
-        res.json(gameState)
     })
 
     app.ws('/ws', (ws, _) => {
-        const clientId = crypto.randomUUID()
-        connections.set(clientId, ws)
+        const user: User = {
+            name: '',
+            connection: ws,
+        }
+
+        const sendResponse = (response: SocketResponse) => {
+            ws.send(JSON.stringify(response))
+        }
 
         ws.onmessage = (event) => {
             const eventString = event.data.toString()
             const request = JSON.parse(eventString) as SocketRequest
 
-            if (request.type === RequestType.CREATE) {
-                const newGame = createGame()
-                games.set(newGame.id, newGame)
-                const createResponse: CreateResponse = {
-                    type: ResponseType.CREATE,
-                    gameState: newGame
+            if (request.type === RequestType.JOIN_ROOM) {
+                const roomId = request.roomId
+                const room = rooms.get(roomId)
+                const joinRoomResponse: JoinRoomResponse = {
+                    type: ResponseType.JOIN_ROOM,
+                    room: room ?? null
                 }
-                ws.send(JSON.stringify(createResponse))
+                sendResponse(joinRoomResponse)
+            }
+            else if (request.type === RequestType.CREATE_ROOM) {
+                const newRoom: Room = {
+                    roomId: createRoomId(5),
+                    games: [],
+                    currentGame: null,
+                    users: [user],
+                    playerX: user,
+                    playerO: null
+                }
+                rooms.set(newRoom.roomId, newRoom)
 
-                connections.forEach((connectionWebSocket) => {
-                    const gameListUpdateResponse: GameListUpdateResponse = {
-                        type: ResponseType.GAME_LIST_UPDATE,
-                        games: Object.fromEntries(games)
-                    }
-                    connectionWebSocket.send(JSON.stringify(gameListUpdateResponse))
-                })
-            }
-            else if (request.type === RequestType.JOIN) {
-                const gameId = request.gameId
-                let subscribers = subscriptions.get(gameId)
-                if (!subscribers) {
-                    subscribers = []
-                    subscriptions.set(gameId, subscribers)
+                const createRoomResponse: CreateRoomResponse = {
+                    type: ResponseType.CREATE_ROOM,
+                    room: newRoom
                 }
-                subscribers.push(clientId)
+                sendResponse(createRoomResponse)
             }
-            else if (request.type === RequestType.LEAVE) {
-                subscriptions.forEach((subscribers) => {
-                    const index = subscribers.findIndex(subscriber => subscriber === clientId);
-                    if (index !== -1) {
-                        subscribers.splice(index, 1);
+            else if (request.type === RequestType.SET_NAME) {
+                user.name = request.name
+                const setNameResponse: SetNameResponse = {
+                    type: ResponseType.SET_NAME,
+                    name: request.name
+                }
+                sendResponse(setNameResponse)
+            }
+            else if (request.type === RequestType.JOIN_X) {
+                const roomId = request.roomId
+                const room = rooms.get(roomId)
+                if (room && room.users.includes(user) && !room.playerX) {
+                    room.playerX = user
+                    const roomUpdateResponse: RoomUpdateResponse = {
+                        type: ResponseType.ROOM_UPDATE,
+                        room: room
                     }
-                })
+                    sendResponseToAll(room.users, roomUpdateResponse)
+                }
+            }
+            else if (request.type === RequestType.JOIN_O) {
+                const roomId = request.roomId
+                const room = rooms.get(roomId)
+                if (room && room.users.includes(user) && !room.playerO) {
+                    room.playerO = user
+                    const roomUpdateResponse: RoomUpdateResponse = {
+                        type: ResponseType.ROOM_UPDATE,
+                        room: room
+                    }
+                    sendResponseToAll(room.users, roomUpdateResponse)
+                }
+            }
+            else if (request.type === RequestType.CREATE_GAME) {
+                const roomId = request.roomId
+                const room = rooms.get(roomId)
+                if (room &&
+                    room.users.includes(user) &&
+                    room.playerX &&
+                    room.playerO &&
+                    (room.playerX === user || room.playerO === user)
+                ) {
+                    const newGame = createGame()
+                    room.games.push(newGame)
+                    room.currentGame = newGame.id
+
+                    const roomUpdateResponse: RoomUpdateResponse = {
+                        type: ResponseType.ROOM_UPDATE,
+                        room: room
+                    }
+                    sendResponseToAll(room.users, roomUpdateResponse)
+                }
             }
             else if (request.type === RequestType.MOVE) {
+                const roomId = request.roomId
                 const gameId = request.gameId
                 const mainIndex = request.mainIndex
                 const subIndex = request.subIndex
 
-                if (gameId === undefined || mainIndex === undefined || subIndex === undefined) {
-                    const error: ErrorResponse = {
-                        type: ResponseType.ERROR,
-                        message: 'Request must contain gameId, mainIndex, and subIndex'
-                    }
-                    ws.send(JSON.stringify(error))
+                const room = rooms.get(roomId)
+                if (!room) {
                     return
                 }
-
-                const game = games.get(gameId)
-
+                const game = room.games.find(game => game.id === gameId)
                 if (!game) {
-                    const error: ErrorResponse = {
-                        type: ResponseType.ERROR,
-                        message: `Game with ID ${gameId} doesn't exist!`
-                    }
-                    ws.send(JSON.stringify(error))
                     return
                 }
+                if (room.users.includes(user) &&
+                    room.currentGame === game.id &&
+                    room.playerX &&
+                    room.playerO
+                ) {
+                    if ((game.currentPlayer === Player.X && room.playerX === user) ||
+                        (game.currentPlayer === Player.O && room.playerO === user)
+                    ) {
+                        const move = makeMove(game, mainIndex, subIndex)
+                        game.board = move.board
+                        game.currentPlayer = move.currentPlayer
+                        game.requiredBoardIndex = move.requiredBoardIndex
+                        game.updatedTimestamp = move.updatedTimestamp
 
-                const gameState = makeMove(game, mainIndex, subIndex)
-                games.set(gameId, gameState)
-
-                const subscribers = subscriptions.get(gameId)
-                subscribers?.forEach(subscriber => {
-                    const subscriberWebsocket = connections.get(subscriber)
-                    subscriberWebsocket?.send(JSON.stringify({
-                        type: ResponseType.GAME_UPDATE,
-                        gameState: gameState
-                    }))
-                })
-            }
-
-            connections.forEach((connectionWebSocket) => {
-                const gameListUpdateResponse: GameListUpdateResponse = {
-                    type: ResponseType.GAME_LIST_UPDATE,
-                    games: Object.fromEntries(games)
+                        const roomUpdateResponse: RoomUpdateResponse = {
+                            type: ResponseType.ROOM_UPDATE,
+                            room: room
+                        }
+                        sendResponseToAll(room.users, roomUpdateResponse)
+                    }
                 }
-                connectionWebSocket.send(JSON.stringify(gameListUpdateResponse))
-            })
+            }
+            else if (request.type === RequestType.END) {
+                const roomId = request.roomId
+                const gameId = request.gameId
+
+                const room = rooms.get(roomId)
+                if (!room) {
+                    return
+                }
+                const game = room.games.find(game => game.id === gameId)
+                if (!game) {
+                    return
+                }
+                if (room.users.includes(user) &&
+                    room.currentGame === game.id &&
+                    room.playerX &&
+                    room.playerO &&
+                    (room.playerX === user || room.playerO === user)
+                ) {
+                    room.currentGame = null
+
+                    const roomUpdateResponse: RoomUpdateResponse = {
+                        type: ResponseType.ROOM_UPDATE,
+                        room: room
+                    }
+                    sendResponseToAll(room.users, roomUpdateResponse)
+                }
+            }
         }
 
         ws.onclose = () => {
-            connections.delete(clientId)
-            subscriptions.forEach((subscribers) => {
-                const index = subscribers.findIndex(subscriber => subscriber === clientId);
-                if (index !== -1) {
-                    subscribers.splice(index, 1);
+            rooms.forEach((room) => {
+                const userIndex = room.users.findIndex(u => u === user)
+                if (userIndex === -1) {
+                    return
                 }
+
+                room.users.splice(userIndex, 1)
+
+                if (room.playerX === user) {
+                    room.playerX = null
+                }
+                if (room.playerO === user) {
+                    room.playerO = null
+                }
+
+                const roomUpdateResponse: RoomUpdateResponse = {
+                    type: ResponseType.ROOM_UPDATE,
+                    room: room
+                }
+                sendResponseToAll(room.users, roomUpdateResponse)
             })
         }
     })

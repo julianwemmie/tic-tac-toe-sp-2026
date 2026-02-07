@@ -4,12 +4,11 @@ import { type SocketRequest, type SocketResponse } from './types/ws';
 import Lobby from './components/Lobby';
 import type { Room as RoomType } from './types/server';
 import Room from './components/Room';
-const VITE_API_PORT = import.meta.env.VITE_API_PORT || '3000'
-const VITE_API_HOST = import.meta.env.VITE_API_HOST || 'localhost'
+const VITE_API_HOST = import.meta.env.VITE_API_HOST || 'localhost:3000'
 const VITE_API_USE_HTTPS = import.meta.env.VITE_API_USE_HTTPS === 'true'
 
 // const HTTP_BASE_URL = `${VITE_API_USE_HTTPS ? 'https' : 'http'}://${VITE_API_HOST}:${VITE_API_PORT}`
-const WS_BASE_URL = `${VITE_API_USE_HTTPS ? 'wss' : 'ws'}://${VITE_API_HOST}:${VITE_API_PORT}`
+const WS_BASE_URL = `${VITE_API_USE_HTTPS ? 'wss' : 'ws'}://${VITE_API_HOST}`
 
 function App() {
 

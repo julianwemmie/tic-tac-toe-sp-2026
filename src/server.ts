@@ -10,7 +10,7 @@ import { Player } from "./types/ultimateTicTacToe.ts";
 import { RequestType, ResponseType, type CreateRoomResponse, type JoinRoomResponse, type RoomUpdateResponse, type SetNameResponse, type SocketRequest, type SocketResponse } from "./types/ws.ts";
 import type { Room, User } from "./types/server.ts";
 
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 
 const createRoomId = (length: number) => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -242,5 +242,5 @@ export function createServer() {
 
 if (require.main === module) {
     const app = createServer()
-    ViteExpress.listen(app as any, PORT, () => console.log(`Server is listening on port: ${PORT}`));
+    ViteExpress.listen(app as any, Number(PORT), () => console.log(`Server is listening on port: ${PORT}`));
 }

@@ -1,6 +1,6 @@
-import { use, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css'
-import { RequestType, ResponseType, type SetNameRequest, type SocketRequest, type SocketResponse } from './types/ws';
+import { type SocketRequest, type SocketResponse } from './types/ws';
 import Lobby from './components/Lobby';
 import type { Room as RoomType } from './types/server';
 import Room from './components/Room';

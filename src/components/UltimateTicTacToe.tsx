@@ -1,7 +1,7 @@
 import { getGameWinner } from "../ultimate-tic-tac-toe";
 import { TIE } from "../types/ultimateTicTacToe";
 import MainBoard from './MainBoard';
-import { RequestType, type EndRequest, type MoveRequest, type SocketRequest, type SocketResponse } from "../types/ws";
+import { RequestType, type EndRequest, type MoveRequest, type SocketRequest } from "../types/ws";
 import type { Room as RoomType } from "../types/server";
 
 type UltimateTicTacToeProps = {

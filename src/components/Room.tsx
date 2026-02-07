@@ -1,6 +1,6 @@
 import { RequestType, ResponseType, type CreateGameRequest, type JoinORequest, type JoinXRequest, type SocketRequest, type SocketResponse } from "../types/ws"
 import type { Room as RoomType } from '../types/server'
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import UltimateTicTacToe from "./UltimateTicTacToe"
 import { timestampToLocalDateTime } from "../utils/date"
 import GameThumbnail from "./GameThumbnail"

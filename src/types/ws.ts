@@ -1,12 +1,23 @@
-import type { GameState } from "./ultimateTicTacToe"
+import type { Room } from "./server"
 
 // ----------- REQUEST -----------
 
 export enum RequestType {
+    // lobby
+    JOIN_ROOM = 'join_room',
+    CREATE_ROOM = 'create_room',
+
+    // user
+    SET_NAME = 'set_name',
+
+    // room
+    JOIN_X = 'join_x',
+    JOIN_O = 'join_o',
+    CREATE_GAME = 'create_game',
+
+    // game
     MOVE = 'move',
-    JOIN = 'join',
-    LEAVE = 'leave',
-    CREATE = 'create'
+    END = 'leave'
 }
 
 
@@ -14,62 +25,91 @@ interface SocketRequestBase {
     type: RequestType
 }
 
-export interface CreateRequest extends SocketRequestBase {
-    type: RequestType.CREATE,
+export interface JoinRoomRequest extends SocketRequestBase {
+    type: RequestType.JOIN_ROOM,
+    roomId: string
 }
-
+export interface CreateRoomRequest extends SocketRequestBase {
+    type: RequestType.CREATE_ROOM,
+}
+export interface SetNameRequest extends SocketRequestBase {
+    type: RequestType.SET_NAME,
+    name: string
+}
+export interface JoinXRequest extends SocketRequestBase {
+    type: RequestType.JOIN_X,
+    roomId: string
+}
+export interface JoinORequest extends SocketRequestBase {
+    type: RequestType.JOIN_O,
+    roomId: string
+}
+export interface CreateGameRequest extends SocketRequestBase {
+    type: RequestType.CREATE_GAME,
+    roomId: string
+}
 export interface MoveRequest extends SocketRequestBase {
     type: RequestType.MOVE,
+    roomId: string,
     gameId: string,
     mainIndex: number,
     subIndex: number
 }
-
-export interface JoinRequest extends SocketRequestBase {
-    type: RequestType.JOIN,
-    gameId: string
+export interface EndRequest extends SocketRequestBase {
+    type: RequestType.END,
+    roomId: string,
+    gameId: string,
 }
 
-export interface LeaveRequest extends SocketRequestBase {
-    type: RequestType.LEAVE,
-    gameId: string
-}
 
-export type SocketRequest = CreateRequest | MoveRequest | JoinRequest | LeaveRequest
+export type SocketRequest = (
+    JoinRoomRequest |
+    CreateRoomRequest | 
+    SetNameRequest |
+    JoinXRequest |
+    JoinORequest |
+    CreateGameRequest |
+    MoveRequest |
+    EndRequest
+)
 
 // ------------- RESPONSE ----------------
 
 export enum ResponseType {
-    CREATE = 'create',
-    GAME_UPDATE = 'game_update',
-    GAME_LIST_UPDATE = 'game_list_update',
-    ERROR = 'error'
+    CREATE_ROOM = 'create_room',
+    JOIN_ROOM = 'join_room',
+    SET_NAME = 'set_name',
+    ROOM_UPDATE = 'room_update',
 }
 
 interface SocketResponseBase {
     type: ResponseType
 }
 
-export interface CreateResponse extends SocketResponseBase {
-    type: ResponseType.CREATE,
-    gameState: GameState
+export interface CreateRoomResponse extends SocketResponseBase {
+    type: ResponseType.CREATE_ROOM,
+    room: Room
 }
 
-interface GameUpdateResponse extends SocketResponseBase {
-    type: ResponseType.GAME_UPDATE,
-    gameState: GameState
+export interface JoinRoomResponse extends SocketResponseBase {
+    type: ResponseType.JOIN_ROOM,
+    room: Room|null
 }
 
-export interface GameListUpdateResponse extends SocketResponseBase {
-    type: ResponseType.GAME_LIST_UPDATE,
-    games: {
-        [k: string]: GameState;
-    }
+export interface SetNameResponse extends SocketResponseBase {
+    type: ResponseType.SET_NAME,
+    name: string
 }
 
-export interface ErrorResponse extends SocketResponseBase {
-    type: ResponseType.ERROR,
-    message: string
+export interface RoomUpdateResponse extends SocketResponseBase {
+    type: ResponseType.ROOM_UPDATE,
+    room: Room
 }
 
-export type SocketResponse = CreateResponse | GameUpdateResponse | GameListUpdateResponse | ErrorResponse 
+
+export type SocketResponse = (
+    CreateRoomResponse | 
+    JoinRoomResponse | 
+    SetNameResponse |
+    RoomUpdateResponse 
+)

@@ -1,14 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import './App.css'
-import SelectGame from './components/SelectGame';
-import UltimateTicTacToe from './components/UltimateTicTacToe';
-import { type SocketResponse } from './types/ws';
+import { RequestType, ResponseType, type SetNameRequest, type SocketRequest, type SocketResponse } from './types/ws';
+import Lobby from './components/Lobby';
+import type { Room as RoomType } from './types/server';
+import Room from './components/Room';
 
 function App() {
 
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
+  const [room, setRoom] = useState<RoomType | null>(null)
+  const [nickname, setNickname] = useState('')
   const [wsMessage, setWsMessage] = useState<SocketResponse>()
   const wsRef = useRef<WebSocket>(null)
+  const sendRequest = (request: SocketRequest) => {
+    wsRef.current?.send(JSON.stringify(request))
+  }
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3000/ws')
@@ -28,7 +33,6 @@ function App() {
     }
   }, [])
 
-
   return (
     <>
       <div style={{
@@ -38,16 +42,25 @@ function App() {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        {/* <button onClick={() => fetch('http://localhost:3000/debug')}>debug</button> */}
+        <button onClick={() => fetch('http://localhost:3000/debug')}>debug</button>
         <h3>Ultimate Tic-Tac-Toe!</h3>
-        {selectedGameId ?
-          <UltimateTicTacToe
-            selectedGameId={selectedGameId}
-            setSelectedGameId={setSelectedGameId}
+        {room ? (
+          <Room
             wsMessage={wsMessage}
-            wsRef={wsRef}
-          /> :
-          <SelectGame setSelectedGameId={setSelectedGameId} wsMessage={wsMessage} wsRef={wsRef}/>}
+            sendRequest={sendRequest}
+            room={room} 
+            setRoom={setRoom}
+            nickname={nickname}
+            />
+        ) :
+          <Lobby
+            wsMessage={wsMessage}
+            sendRequest={sendRequest}
+            setRoom={setRoom}
+            nickname={nickname}
+            setNickname={setNickname}
+          />
+        }
       </div>
     </>
   )

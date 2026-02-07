@@ -1,71 +1,39 @@
-import { useEffect, useState } from "react";
-import { createGame, getGameWinner } from "../ultimate-tic-tac-toe";
-import { TIE, type GameState } from "../types/ultimateTicTacToe";
+import { getGameWinner } from "../ultimate-tic-tac-toe";
+import { TIE } from "../types/ultimateTicTacToe";
 import MainBoard from './MainBoard';
-import { RequestType, ResponseType, type JoinRequest, type LeaveRequest, type MoveRequest, type SocketResponse } from "../types/ws";
+import { RequestType, type EndRequest, type MoveRequest, type SocketRequest, type SocketResponse } from "../types/ws";
+import type { Room as RoomType } from "../types/server";
 
 type UltimateTicTacToeProps = {
-  selectedGameId: string,
-  setSelectedGameId: React.Dispatch<React.SetStateAction<string | null>>,
-  wsMessage: SocketResponse | undefined,
-  wsRef: React.RefObject<WebSocket | null>
+  sendRequest: (request: SocketRequest) => void,
+  room: RoomType,
+  currentPlayer: string,
 }
 
-export default function UltimateTicTacToe({ selectedGameId, setSelectedGameId, wsMessage, wsRef }: UltimateTicTacToeProps) {
-
-  const [gameState, setGameState] = useState<GameState>(createGame())
-  const [loading, setLoading] = useState(false)
+export default function UltimateTicTacToe({sendRequest, room, currentPlayer }: UltimateTicTacToeProps) {
+  
+  const gameState = room.games.find(game => game.id === room.currentGame)
   const winner = gameState ? getGameWinner(gameState) : undefined
 
-  useEffect(() => {
-    if (wsMessage?.type === ResponseType.GAME_UPDATE) {
-      setGameState(wsMessage.gameState)
-    }
-  }, [wsMessage])
-
-  useEffect(() => {
-    setLoading(true)
-    fetch(`http://localhost:3000/game/${selectedGameId}`)
-      .then(res => res.json())
-      .then(gameState => setGameState(gameState))
-      .finally(() => setLoading(false))
-
-    const joinRequest: JoinRequest = {
-      type: RequestType.JOIN,
-      gameId: selectedGameId
-    }
-    wsRef.current?.send(JSON.stringify(joinRequest))
-    return () => {
-      const leaveRequest: LeaveRequest = {
-        type: RequestType.LEAVE,
-        gameId: selectedGameId
-      }
-      wsRef.current?.send(JSON.stringify(leaveRequest))
-    }
-  }, [])
-
   const handleClick = (mainBoardIndex: number, subIndex: number): void => {
-    // fetch(`http://localhost:3000/move/${selectedGameId}`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ mainIndex: mainBoardIndex, subIndex: subIndex })
-    // })
-    //   .then(res => res.json())
-    //   .then(gameState => setGameState(gameState))
-
     const moveRequest: MoveRequest = {
       type: RequestType.MOVE,
-      gameId: selectedGameId,
+      roomId: room.roomId,
+      gameId: room.currentGame!,
       mainIndex: mainBoardIndex,
       subIndex: subIndex
     }
 
-    wsRef.current?.send(JSON.stringify(moveRequest))
+    sendRequest(moveRequest)
   }
 
-  const returnToLobby = () => {
-    setGameState(createGame())
-    setSelectedGameId(null)
+  const handleEndGame = () => {
+    const endRequest: EndRequest = {
+      type: RequestType.END,
+      roomId: room.roomId,
+      gameId: room.currentGame!
+    }
+    sendRequest(endRequest)
   }
 
   const getGameInfoText = () => {
@@ -78,12 +46,27 @@ export default function UltimateTicTacToe({ selectedGameId, setSelectedGameId, w
     return `Current player: ${gameState?.currentPlayer}`
   }
 
-  if (loading) {
-    return <p>loading...</p>
+  const getPlayerSymbol = () => {
+    if (room.playerX?.name === currentPlayer) {
+      return 'X'
+    }
+    if (room.playerO?.name === currentPlayer) {
+      return 'O'
+    }
+    return 'spectator'
+  }
+
+  if (!gameState) {
+    return <div>Loading...</div>
   }
 
   return (
     <>
+      <div style={{
+        paddingBottom: '2rem'
+      }}>
+        You are: {getPlayerSymbol()}
+      </div>
       <div style={{
         paddingBottom: '2rem'
       }}>
@@ -93,7 +76,7 @@ export default function UltimateTicTacToe({ selectedGameId, setSelectedGameId, w
         gameState={gameState}
         makeMove={handleClick}
       />
-      <button onClick={returnToLobby}>Lobby</button>
+      <button onClick={handleEndGame}>End Game</button>
     </>
   )
 }

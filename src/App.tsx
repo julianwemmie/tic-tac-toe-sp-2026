@@ -4,6 +4,8 @@ import { type SocketRequest, type SocketResponse } from './types/ws';
 import Lobby from './components/Lobby';
 import type { Room as RoomType } from './types/server';
 import Room from './components/Room';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'ws://localhost:3000'
+
 
 function App() {
 
@@ -16,7 +18,7 @@ function App() {
   }
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3000/ws')
+    const ws = new WebSocket(BASE_URL + '/ws')
     ws.onopen = () => {
       wsRef.current = ws
     }

@@ -49,68 +49,60 @@ export default function Room({ wsMessage, sendRequest, room, setRoom, nickname }
     <>
       {!room.currentGame ? (
         <>
-          <div>Room: {room.roomId}</div>
-          <div>Hey! {nickname}</div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-          }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+            <div>Room Code: {room.roomId}</div>
+            <div>Hey! {nickname}</div>
             {room.playerX ? (
               <div>X Player: {room.playerX.name}</div>
             ) : (
               <button
                 onClick={handleJoinX}
-                style={{ height: '20px' }}
+                style={{ height: '2rem' }}
               >
                 Join X
               </button>
             )}
-          </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-          }}>
             {room.playerO ? (
               <div>O Player: {room.playerO.name}</div>
             ) : (
               <button
                 onClick={handleJoinO}
-                style={{ height: '20px' }}
+                style={{ height: '2rem' }}
               >
                 Join O
               </button>
             )}
-          </div>
-          <button onClick={handleStartGame}>start game</button>
-          <div className="select-game--grid">
-            {room.games?.map((game) => (
-              <div
-                key={game.id}
-                // onClick={() => setSelectedGameId(game.id)}
-                className="select-game--button"
-                style={{
-                  padding: '0.5rem',
-                  position: 'relative'
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  zIndex: '4'
-                }}></div>
-                <div style={{
-                  fontSize: '0.75rem',
-                  textAlign: 'center'
-                }}>
-                  {timestampToLocalDateTime(game.createdTimestamp)}
+            <button onClick={handleStartGame} style={{ height: '3rem', width: '10rem' }}>start game</button>
+            <div className="select-game--grid">
+              {room.games?.map((game) => (
+                <div
+                  key={game.id}
+                  // onClick={() => setSelectedGameId(game.id)}
+                  className="select-game--button"
+                  style={{
+                    padding: '0.5rem',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    zIndex: '4'
+                  }}></div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    textAlign: 'center'
+                  }}>
+                    {timestampToLocalDateTime(game.createdTimestamp)}
+                  </div>
+                  <GameThumbnail gameState={game} />
                 </div>
-                <GameThumbnail gameState={game} />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </>
       ) : (

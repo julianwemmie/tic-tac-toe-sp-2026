@@ -44,7 +44,7 @@ function App() {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <button onClick={() => fetch('http://localhost:3000/debug')}>debug</button>
+        {/* <button onClick={() => fetch('http://localhost:3000/debug')}>debug</button> */}
         <h3>Ultimate Tic-Tac-Toe!</h3>
         {room ? (
           <Room

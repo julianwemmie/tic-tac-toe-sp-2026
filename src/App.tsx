@@ -41,7 +41,7 @@ function App() {
   return (
     <>
       <div style={{
-        paddingTop: '10vh',
+        paddingTop: '5vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',

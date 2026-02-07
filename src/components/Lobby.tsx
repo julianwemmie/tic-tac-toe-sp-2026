@@ -82,6 +82,7 @@ export default function Lobby({ wsMessage, sendRequest, setRoom, nickname, setNi
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
                 }}>
                     <p>Nickname: {nickname}</p>
                     {!nickname && (

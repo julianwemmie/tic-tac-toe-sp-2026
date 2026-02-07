@@ -5,24 +5,113 @@
   box-sizing: border-box;
 }
 
-
 html {
-    font-family: 'Inter', Arial, sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
+  color: #3d3529;
 }
 
+body {
+  background-color: #f5f1eb;
+  margin: 0;
+}
+
+/* Base button styles */
+button {
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d4cdc0;
+  border-radius: 6px;
+  background-color: #fffdf9;
+  color: #3d3529;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+button:hover {
+  background-color: #f0ebe3;
+  border-color: #b8ad9e;
+}
+
+/* Primary button */
+.btn-primary {
+  background-color: #3d3529;
+  border-color: #3d3529;
+  color: #f5f1eb;
+}
+
+.btn-primary:hover {
+  background-color: #2a241c;
+  border-color: #2a241c;
+}
+
+/* Player-colored buttons */
+.btn-x {
+  background-color: #5c6d8a;
+  border-color: #5c6d8a;
+  color: white;
+}
+
+.btn-x:hover {
+  background-color: #4a5870;
+  border-color: #4a5870;
+}
+
+.btn-o {
+  background-color: #b67b6b;
+  border-color: #b67b6b;
+  color: white;
+}
+
+.btn-o:hover {
+  background-color: #a06858;
+  border-color: #a06858;
+}
+
+/* Input styles */
+input[type="text"] {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d4cdc0;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fffdf9;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="text"]:focus {
+  border-color: #3d3529;
+  box-shadow: 0 0 0 3px rgba(61, 53, 41, 0.1);
+}
+
+/* Game cell buttons */
+.tic-tac-toe--button {
+  transition: background-color 0.15s ease;
+}
 
 .tic-tac-toe--button:hover {
-    background-color: lightgrey;
-    cursor: pointer;
+  background-color: rgba(61, 53, 41, 0.06);
+}
+
+/* Game thumbnail grid */
+.select-game--button {
+  background-color: #fffdf9;
+  border-radius: 8px;
+  border: 1px solid #e8e2d9;
+  transition: all 0.15s ease;
 }
 
 .select-game--button:hover {
-    background-color: lightgrey;
+  border-color: #d4cdc0;
+  box-shadow: 0 1px 3px rgba(61, 53, 41, 0.08);
 }
 
 .select-game--grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 
 @media (min-width: 1024px) {
@@ -30,3 +119,27 @@ html {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Card style */
+.card {
+  background-color: #fffdf9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(61, 53, 41, 0.08);
+}
+
+/* Room code badge */
+.room-code {
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #3d3529;
+  background-color: #ebe5db;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+/* Player indicator */
+.player-x { color: #5c6d8a; }
+.player-o { color: #b67b6b; }

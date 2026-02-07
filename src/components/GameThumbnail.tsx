@@ -6,6 +6,12 @@ type GameThumbnailProps = {
   gameState: GameState
 }
 
+const getPlayerColor = (player: string | null) => {
+  if (player === 'X') return '#5c6d8a'
+  if (player === 'O') return '#b67b6b'
+  return '#7a7265'
+}
+
 export default function GameThumbnail({ gameState }: GameThumbnailProps) {
   return (
     <>
@@ -15,6 +21,7 @@ export default function GameThumbnail({ gameState }: GameThumbnailProps) {
       }}>
         {gameState.board.map((_, mainIndex) => (
           <div
+            key={mainIndex}
             style={{
               display: 'flex',
               justifyContent: 'center',
@@ -39,13 +46,16 @@ export default function GameThumbnail({ gameState }: GameThumbnailProps) {
                   top: 0,
                   left: 0,
                   right: 0,
-                  bottom: 0
+                  bottom: 0,
+                  backgroundColor: 'rgba(245, 241, 235, 0.3)',
+                  borderRadius: '4px'
                 }}>
                   <p style={{
                     fontSize: isWinnerTie(getSubGameWinner(gameState, mainIndex)) ? '1rem' : '3rem',
                     margin: '0',
                     textAlign: 'center',
-                    color: 'rgb(71, 71, 71)'
+                    color: getPlayerColor(getSubGameWinner(gameState, mainIndex)),
+                    fontWeight: 'bold'
                   }}>{getSubGameWinner(gameState, mainIndex)}</p>
                 </div>
               )}
@@ -60,7 +70,8 @@ export default function GameThumbnail({ gameState }: GameThumbnailProps) {
                     justifyContent: 'center',
                     alignItems: 'center',
                     fontSize: '10px',
-                    color: 'black',
+                    fontWeight: 600,
+                    color: getPlayerColor(cell),
                     ...getTTTBordersByIndex(
                       index,
                       '1px',
